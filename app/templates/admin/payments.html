@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block content %}
+
+<h3>Pagos pendientes</h3>
+
+<div class="card mt-3">
+  <div class="table-responsive">
+    <table class="table mb-0">
+      <thead>
+        <tr>
+          <th>Negocio</th>
+          <th>Usuario</th>
+          <th>Archivo</th>
+          <th>Fecha</th>
+          <th class="text-end">Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for p in pending %}
+        <tr>
+          <td>{{ p.business.name }}</td>
+          <td>{{ p.user.email }}</td>
+          <td>
+            <a target="_blank" href="{{ url_for('billing.view_proof', proof_id=p.id) }}">Ver</a>
+            <div class="text-muted small">{{ p.original_name }}</div>
+          </td>
+          <td>{{ p.created_at }}</td>
+          <td class="text-end">
+            <form method="post" action="{{ url_for('admin.approve_payment', proof_id=p.id) }}" style="display:inline">
+              <button class="btn btn-sm btn-success">Aprobar</button>
+            </form>
+            <form method="post" action="{{ url_for('admin.reject_payment', proof_id=p.id) }}" style="display:inline">
+              <button class="btn btn-sm btn-outline-danger">Rechazar</button>
+            </form>
+          </td>
+        </tr>
+        {% endfor %}
+        {% if not pending %}
+        <tr><td colspan="5" class="text-center text-muted py-4">Sin pendientes ✅</td></tr>
+        {% endif %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+{% endblock %}

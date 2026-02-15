@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="card">
+  <div class="card-body">
+    <h3>Tu plan</h3>
+
+    <p class="mb-1">Negocio: <strong>{{ biz.name }}</strong></p>
+
+    {% if biz.is_pro %}
+      <p class="text-success mb-2"><strong>Plan Pro activo ✅</strong></p>
+      <p class="text-muted mb-0">Tienes acceso completo a Productos, Ventas y Reportes.</p>
+
+    {% else %}
+      {% set days_left = ((biz.trial_ends_at - now).days if biz.trial_ends_at else 0) %}
+
+      {% if biz.trial_ends_at and biz.trial_ends_at > now %}
+        <p class="text-warning mb-2"><strong>Plan Trial activo</strong></p>
+        <p class="mb-1">Días restantes: <strong>{{ days_left }}</strong></p>
+        <p class="mb-0">Termina: <strong>{{ biz.trial_ends_at }}</strong></p>
+
+        <hr>
+        <p class="mb-2">
+          Si quieres asegurar acceso sin interrupciones, activa el <strong>Plan Pro</strong>.
+        </p>
+
+      {% else %}
+        <p class="text-danger mb-2"><strong>Tu prueba gratis terminó</strong></p>
+        <p class="text-muted mb-0">
+          Para seguir usando Productos, Ventas y Reportes debes activar el <strong>Plan Pro</strong>.
+        </p>
+
+        <hr>
+      {% endif %}
+
+      <!-- Pago manual -->
+      <div class="d-flex flex-wrap gap-2">
+        <a class="btn btn-primary" href="{{ url_for('billing.pay') }}">
+          Ver datos para pago
+        </a>
+		<a class="btn btn-primary" href="{{ url_for('billing.upload_proof') }}">
+		Subir comprobante
+		</a>
+        <a class="btn btn-outline-success"
+           href="https://wa.me/529673227689?text=Hola%20ya%20realic%C3%A9%20mi%20pago%20de%20ControlPyME%20y%20te%20env%C3%ADo%20mi%20comprobante.%20Mi%20correo%20es%3A%20{{ current_user.email | urlencode }}">
+          Enviar comprobante por WhatsApp
+        </a>
+      </div>
+
+      <p class="text-muted mt-3 mb-0">
+        Recomendación: en el concepto pon tu correo registrado para identificar tu pago más rápido.
+      </p>
+    {% endif %}
+  </div>
+</div>
+
+{% endblock %}

@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block content %}
+
+<h3>Admin</h3>
+
+<div class="row g-3">
+  <div class="col-md-4">
+    <div class="card"><div class="card-body text-center">
+      <div class="text-muted">Negocios</div>
+      <div class="fs-3">{{ total_business }}</div>
+    </div></div>
+  </div>
+
+  <div class="col-md-4">
+    <div class="card"><div class="card-body text-center">
+      <div class="text-muted">Pro activos</div>
+      <div class="fs-3 text-success">{{ pro_business }}</div>
+    </div></div>
+  </div>
+
+  <div class="col-md-4">
+    <div class="card"><div class="card-body text-center">
+      <div class="text-muted">Pagos pendientes</div>
+      <div class="fs-3 text-warning">{{ pending_payments }}</div>
+    </div></div>
+  </div>
+</div>
+
+<hr>
+
+<div class="d-flex gap-2 flex-wrap">
+  <a class="btn btn-dark" href="{{ url_for('admin.businesses') }}">Negocios</a>
+  <a class="btn btn-dark" href="{{ url_for('admin.payments') }}">Pagos</a>
+  <a class="btn btn-dark" href="{{ url_for('admin.users') }}">Usuarios</a>
+</div>
+
+{% endblock %}

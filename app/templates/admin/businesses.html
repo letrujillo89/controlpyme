@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="d-flex justify-content-between align-items-center">
+  <h3>Negocios</h3>
+  <form class="d-flex gap-2" method="get">
+    <input class="form-control form-control-sm" name="q" placeholder="Buscar negocio..." value="{{ q }}">
+    <button class="btn btn-sm btn-dark">Buscar</button>
+  </form>
+</div>
+
+<div class="card mt-3">
+  <div class="table-responsive">
+    <table class="table mb-0">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Negocio</th>
+          <th>Pro</th>
+          <th>Trial termina</th>
+          <th>Status pago</th>
+          <th class="text-end">Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for b in businesses %}
+        <tr>
+          <td>{{ b.id }}</td>
+          <td>{{ b.name }}</td>
+          <td>
+            {% if b.is_pro %}
+              <span class="badge text-bg-success">Pro</span>
+            {% else %}
+              <span class="badge text-bg-secondary">No</span>
+            {% endif %}
+          </td>
+          <td>{{ b.trial_ends_at if b.trial_ends_at else "-" }}</td>
+          <td>{{ b.payment_status if b.payment_status is defined else "-" }}</td>
+          <td class="text-end">
+            {% if not b.is_pro %}
+              <form method="post" action="{{ url_for('admin.activate_pro', biz_id=b.id) }}" style="display:inline">
+                <button class="btn btn-sm btn-success">Activar Pro</button>
+              </form>
+            {% else %}
+              <form method="post" action="{{ url_for('admin.deactivate_pro', biz_id=b.id) }}" style="display:inline">
+                <button class="btn btn-sm btn-outline-danger">Desactivar Pro</button>
+              </form>
+            {% endif %}
+
+            <form method="post" action="{{ url_for('admin.extend_trial', biz_id=b.id) }}" style="display:inline">
+              <button class="btn btn-sm btn-outline-dark">+7 días trial</button>
+            </form>
+          </td>
+        </tr>
+        {% endfor %}
+        {% if not businesses %}
+        <tr><td colspan="6" class="text-center text-muted py-4">Sin negocios</td></tr>
+        {% endif %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+{% endblock %}

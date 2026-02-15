@@ -1,0 +1,133 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <div>
+    <h3 class="mb-0">Dashboard</h3>
+    <div class="text-muted small">Resumen rápido de tu negocio</div>
+  </div>
+
+  <div class="d-flex gap-2">
+    <a class="btn btn-outline-dark btn-sm" href="{{ url_for('sales.new_sale') }}">+ Venta</a>
+    <a class="btn btn-dark btn-sm" href="{{ url_for('reports.reports_home') }}">Ver reportes</a>
+  </div>
+</div>
+
+<div class="row g-3">
+
+  <!-- Ventas hoy -->
+  <div class="col-md-4">
+    <div class="card shadow-sm">
+      <div class="card-body">
+        <div class="text-muted small">Ventas hoy</div>
+        <div class="fs-2 fw-bold text-success">${{ total_today }}</div>
+        <div class="text-muted small">{{ sales_count }} ventas</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Últimos 7 días -->
+  <div class="col-md-4">
+    <div class="card shadow-sm">
+      <div class="card-body">
+        <div class="text-muted small">Últimos 7 días</div>
+        <div class="fs-2 fw-bold">${{ total_7d }}</div>
+        <div class="text-muted small">{{ sales_7d_count }} ventas</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Productos -->
+  <div class="col-md-4">
+    <div class="card shadow-sm">
+      <div class="card-body">
+        <div class="text-muted small">Productos</div>
+        <div class="fs-2 fw-bold">{{ products_count }}</div>
+        <div class="text-muted small">
+          Stock bajo: <strong>{{ low_stock_count }}</strong>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<hr class="my-4">
+
+<div class="row g-3">
+
+  <!-- Stock bajo -->
+  <div class="col-md-6">
+    <div class="card shadow-sm">
+      <div class="card-body d-flex justify-content-between align-items-center">
+        <h5 class="mb-0">Stock bajo</h5>
+        <a class="btn btn-outline-dark btn-sm" href="{{ url_for('products.list_products') }}">Ver productos</a>
+      </div>
+
+      <div class="table-responsive">
+        <table class="table mb-0">
+          <thead>
+            <tr>
+              <th>Producto</th>
+              <th class="text-end">Stock</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for p in low_stock %}
+            <tr>
+              <td>{{ p.name }}</td>
+              <td class="text-end">
+                <span class="badge text-bg-warning">{{ p.stock }}</span>
+              </td>
+            </tr>
+            {% endfor %}
+            {% if not low_stock %}
+            <tr>
+              <td colspan="2" class="text-center text-muted py-3">Todo bien ✅</td>
+            </tr>
+            {% endif %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Últimas ventas -->
+  <div class="col-md-6">
+    <div class="card shadow-sm">
+      <div class="card-body d-flex justify-content-between align-items-center">
+        <h5 class="mb-0">Últimas ventas</h5>
+        <a class="btn btn-outline-dark btn-sm" href="{{ url_for('reports.reports_home') }}">Detalles</a>
+      </div>
+
+      <div class="table-responsive">
+        <table class="table mb-0">
+          <thead>
+            <tr>
+              <th>Fecha</th>
+              <th>Producto</th>
+              <th class="text-end">Total</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for s in last_sales %}
+            <tr>
+              <td class="text-muted">{{ s.created_at.strftime("%Y-%m-%d %H:%M") }}</td>
+              <td>{{ s.product_name }}</td>
+              <td class="text-end"><strong>${{ s.total }}</strong></td>
+            </tr>
+            {% endfor %}
+            {% if not last_sales %}
+            <tr>
+              <td colspan="3" class="text-center text-muted py-3">Sin ventas aún</td>
+            </tr>
+            {% endif %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+{% endblock %}

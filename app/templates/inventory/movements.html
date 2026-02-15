@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-2 mb-2">
+  <div>
+    <h3 class="mb-0">Kardex (Inventario)</h3>
+    <div class="text-muted small">Entradas, salidas y ajustes de stock</div>
+  </div>
+</div>
+
+<div class="card mb-3">
+  <div class="card-body">
+    <form class="row g-2 align-items-end" method="post" action="{{ url_for('inventory.create_movement') }}">
+      <div class="col-12 col-md-4">
+        <label class="form-label mb-1">Producto</label>
+        <select class="form-select form-select-sm" name="product_id" required>
+          <option value="">-- Selecciona --</option>
+          {% for p in products %}
+            <option value="{{ p.id }}">{{ p.name }} (stock: {{ p.stock }})</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="col-12 col-md-3">
+        <label class="form-label mb-1">Tipo</label>
+        <select class="form-select form-select-sm" name="movement_type" required>
+          <option value="in">Entrada (+)</option>
+          <option value="out">Salida (-)</option>
+          <option value="adjust">Ajuste (poner stock)</option>
+        </select>
+      </div>
+
+      <div class="col-12 col-md-2">
+        <label class="form-label mb-1">Cantidad</label>
+        <input class="form-control form-control-sm" type="number" min="1" name="quantity" required>
+        <div class="text-muted small">En “Ajuste”, es el nuevo stock.</div>
+      </div>
+
+      <div class="col-12 col-md-3">
+        <label class="form-label mb-1">Nota (opcional)</label>
+        <input class="form-control form-control-sm" name="note" placeholder="Ej: compra proveedor, merma, etc.">
+      </div>
+
+      <div class="col-12 d-grid">
+        <button class="btn btn-dark btn-sm">Registrar movimiento</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="card shadow-sm">
+  <div class="card-body d-flex justify-content-between align-items-center">
+    <h5 class="mb-0">Últimos movimientos</h5>
+  </div>
+
+  <div class="table-responsive">
+    <table class="table mb-0">
+      <thead>
+        <tr>
+          <th>Fecha</th>
+          <th>Producto</th>
+          <th>Tipo</th>
+          <th class="text-end">Antes</th>
+          <th class="text-end">Cant.</th>
+          <th class="text-end">Después</th>
+          <th>Nota</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for m in movements %}
+        <tr>
+          <td class="text-muted">{{ m.created_at.strftime("%Y-%m-%d %H:%M") }}</td>
+          <td>{{ m.product.name }}</td>
+          <td>
+            {% if m.movement_type == "in" %}
+              <span class="badge text-bg-success">Entrada</span>
+            {% elif m.movement_type == "out" %}
+              <span class="badge text-bg-danger">Salida</span>
+            {% else %}
+              <span class="badge text-bg-warning">Ajuste</span>
+            {% endif %}
+          </td>
+          <td class="text-end">{{ m.stock_before }}</td>
+          <td class="text-end">{{ m.quantity }}</td>
+          <td class="text-end"><strong>{{ m.stock_after }}</strong></td>
+          <td class="text-muted small">{{ m.note or "" }}</td>
+        </tr>
+        {% endfor %}
+        {% if not movements %}
+        <tr><td colspan="7" class="text-center text-muted py-3">Aún no hay movimientos</td></tr>
+        {% endif %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+{% endblock %}

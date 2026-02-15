@@ -1,0 +1,116 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <div>
+    <h3 class="mb-0">Nueva venta</h3>
+    <div class="text-muted small">Busca y registra en segundos</div>
+  </div>
+</div>
+
+<div class="card shadow-sm">
+  <div class="card-body">
+
+    <form method="post" action="{{ url_for('sales.create_sale') }}" class="row g-2 align-items-end">
+
+      <div class="col-12 col-md-6">
+        <label class="form-label mb-1">Producto</label>
+
+        <!-- Buscador -->
+        <input id="productSearch"
+               class="form-control"
+               list="productsList"
+               placeholder="Escribe para buscar..."
+               autocomplete="off"
+               required>
+
+        <datalist id="productsList">
+          {% for p in products %}
+            <option value="{{ p.name }}"
+                    data-id="{{ p.id }}"
+                    data-price="{{ p.price }}"
+                    data-stock="{{ p.stock }}"></option>
+          {% endfor %}
+        </datalist>
+
+        <!-- aquí guardamos el id real -->
+        <input type="hidden" name="product_id" id="productId">
+
+        <div class="text-muted small mt-1" id="productMeta">
+          Selecciona un producto para ver precio y stock.
+        </div>
+      </div>
+
+      <div class="col-12 col-md-3">
+        <label class="form-label mb-1">Cantidad</label>
+        <input class="form-control" type="number" min="1" name="quantity" id="qty" value="1" required>
+      </div>
+
+      <div class="col-12 col-md-3 d-grid">
+        <button class="btn btn-dark" id="btnSell">Registrar venta</button>
+      </div>
+
+    </form>
+
+  </div>
+</div>
+
+<script>
+  const search = document.getElementById("productSearch");
+  const hiddenId = document.getElementById("productId");
+  const meta = document.getElementById("productMeta");
+  const btnSell = document.getElementById("btnSell");
+  const qty = document.getElementById("qty");
+
+  function resetSelection(){
+    hiddenId.value = "";
+    meta.textContent = "Selecciona un producto para ver precio y stock.";
+    btnSell.disabled = true;
+  }
+
+  // inicialmente deshabilitamos hasta que elija un producto válido
+  resetSelection();
+
+  function findOptionByValue(value){
+    const options = document.querySelectorAll("#productsList option");
+    for (const opt of options){
+      if (opt.value === value) return opt;
+    }
+    return null;
+  }
+
+  function refreshButtonState(stock){
+    const q = parseInt(qty.value || "0", 10);
+    if (!hiddenId.value) { btnSell.disabled = true; return; }
+    if (isNaN(q) || q <= 0) { btnSell.disabled = true; return; }
+    if (stock <= 0) { btnSell.disabled = true; return; }
+    if (q > stock) { btnSell.disabled = true; return; }
+    btnSell.disabled = false;
+  }
+
+  search.addEventListener("input", () => {
+    const opt = findOptionByValue(search.value);
+    if (!opt){
+      resetSelection();
+      return;
+    }
+
+    const id = opt.dataset.id;
+    const price = opt.dataset.price;
+    const stock = parseInt(opt.dataset.stock || "0", 10);
+
+    hiddenId.value = id;
+
+    meta.innerHTML = `Precio: <strong>$${price}</strong> · Stock: <strong>${stock}</strong>`;
+
+    refreshButtonState(stock);
+  });
+
+  qty.addEventListener("input", () => {
+    const opt = findOptionByValue(search.value);
+    const stock = opt ? parseInt(opt.dataset.stock || "0", 10) : 0;
+    refreshButtonState(stock);
+  });
+</script>
+
+{% endblock %}

@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block content %}
+
+<h3>Nuevo producto</h3>
+
+<form method="post">
+  <div class="mb-2">
+    <label>Nombre</label>
+    <input class="form-control" name="name" required>
+  </div>
+
+  <div class="mb-2">
+    <label>Precio</label>
+    <input class="form-control" name="price" required>
+  </div>
+
+  <div class="mb-3">
+    <label>Stock</label>
+    <input class="form-control" name="stock" value="0">
+  </div>
+
+  <button class="btn btn-success">Guardar</button>
+</form>
+
+{% endblock %}

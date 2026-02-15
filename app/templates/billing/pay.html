@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="row justify-content-center">
+  <div class="col-md-8">
+
+    <div class="card shadow-sm">
+      <div class="card-body">
+
+        <h3 class="mb-3">Activar Plan Pro</h3>
+
+        <p class="text-muted">
+          Realiza tu pago mensual mediante transferencia bancaria,
+          depósito en OXXO o banca móvil.
+        </p>
+
+        <hr>
+
+        <h5 class="mb-3">Datos para pago</h5>
+
+        <ul class="list-group mb-3">
+          <li class="list-group-item">
+            <strong>Banco:</strong> BBVA
+          </li>
+
+          <li class="list-group-item">
+            <strong>Nombre:</strong> Luis Enrique Trujillo
+          </li>
+
+          <li class="list-group-item d-flex justify-content-between align-items-center">
+            <div>
+              <strong>CLABE:</strong>
+              <span id="clabe">012180015628690494</span>
+            </div>
+
+            <button class="btn btn-sm btn-outline-dark"
+                    onclick="copiarClabe()">
+              Copiar
+            </button>
+          </li>
+
+          <li class="list-group-item">
+            <strong>Monto:</strong>
+            <span class="text-success fw-bold">$149 MXN / mes</span>
+          </li>
+
+          <li class="list-group-item">
+            <strong>Concepto:</strong> {{ current_user.email }}
+          </li>
+        </ul>
+
+        <div class="alert alert-info">
+          <strong>Importante:</strong><br>
+          Usa tu correo registrado como concepto para identificar tu pago más rápido.
+        </div>
+
+        <hr>
+
+        <p class="text-muted">
+          Después de realizar el pago, envía tu comprobante para activar tu cuenta Pro.
+        </p>
+		<a class="btn btn-primary" href="{{ url_for('billing.upload_proof') }}">
+		Subir comprobante
+		</a>
+        <a class="btn btn-success"
+           target="_blank"
+           href="https://wa.me/529673227689?text=Hola%20ya%20realic%C3%A9%20mi%20pago%20de%20ControlPyME.%20Mi%20correo%20es%3A%20{{ current_user.email | urlencode }}">
+           Enviar comprobante por WhatsApp
+        </a>
+
+        <a class="btn btn-outline-secondary ms-2"
+           href="{{ url_for('billing.plan') }}">
+           Volver
+        </a>
+
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+function copiarClabe() {
+  const texto = document.getElementById("clabe").innerText;
+  navigator.clipboard.writeText(texto);
+  alert("CLABE copiada ✅");
+}
+</script>
+
+{% endblock %}

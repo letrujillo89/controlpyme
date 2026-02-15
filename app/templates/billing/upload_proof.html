@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="card">
+  <div class="card-body">
+    <h3>Subir comprobante</h3>
+
+    <p class="text-muted mb-3">
+      Sube tu comprobante en formato <strong>PNG/JPG/PDF</strong> (máx 5MB).
+    </p>
+
+    <form method="post" enctype="multipart/form-data">
+      <div class="mb-3">
+        <input class="form-control" type="file" name="file" accept=".png,.jpg,.jpeg,.pdf" required>
+      </div>
+
+      <button class="btn btn-success">Enviar comprobante</button>
+      <a class="btn btn-outline-secondary" href="{{ url_for('billing.plan') }}">Volver</a>
+    </form>
+  </div>
+</div>
+
+{% endblock %}

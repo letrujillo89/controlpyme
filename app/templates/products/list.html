@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block content %}
+
+<h3>Productos</h3>
+
+<a class="btn btn-primary mb-3"
+   href="{{ url_for('products.new_product') }}">
+   Nuevo producto
+</a>
+
+<table class="table">
+  <tr>
+    <th>Nombre</th>
+    <th>Precio</th>
+    <th>Stock</th>
+  </tr>
+
+  {% for p in products %}
+  <tr>
+    <td>{{ p.name }}</td>
+    <td>${{ p.price }}</td>
+    <td>{{ p.stock }}</td>
+  </tr>
+  {% endfor %}
+</table>
+
+{% endblock %}
