@@ -1,4 +1,4 @@
-from flask import render_template, request, redirect, url_for, flash, abort
+from flask import render_template, request, redirect, url_for, flash, abort, session
 from flask_login import login_required, current_user
 from . import sales_bp
 from ..extensions import db
@@ -13,8 +13,16 @@ def new_sale():
         business_id=current_user.business_id,
         is_active=True
     ).order_by(Product.name.asc()).all()
+    last_sale = None
+    last_sale_id = session.get("last_sale_id")
 
-    return render_template("sales/new.html", products=products)
+    if last_sale_id:
+        last_sale = Sale.query.filter_by(
+            id=last_sale_id,
+            business_id=current_user.business_id
+        ).first()
+
+    return render_template("sales/new.html", products=products, last_sale=last_sale)
 
 
 @sales_bp.post("/new")
@@ -83,5 +91,7 @@ def create_sale():
     db.session.add(movement)
     db.session.commit()
 
+    session["last_sale_id"] = sale.id
     flash("Venta registrada ✅", "success")
-    return redirect(url_for("main.dashboard"))
+    return redirect(url_for("sales.new_sale"))
+
