@@ -1,27 +1,116 @@
 {% extends "base.html" %}
 {% block content %}
 
-<h3>Productos</h3>
+<div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+  <h3 class="mb-0">Productos</h3>
 
-<a class="btn btn-primary mb-3"
-   href="{{ url_for('products.new_product') }}">
-   Nuevo producto
-</a>
+  <a class="btn btn-primary"
+     href="{{ url_for('products.new_product') }}">
+     + Nuevo producto
+  </a>
+</div>
 
-<table class="table">
-  <tr>
-    <th>Nombre</th>
-    <th>Precio</th>
-    <th>Stock</th>
-  </tr>
+<div class="card shadow-sm">
+  <div class="table-responsive">
+    <table class="table mb-0 align-middle">
+      <thead class="table-light">
+        <tr>
+          <th>Nombre</th>
+          <th style="width:220px;">Precio</th>
+          <th>Stock</th>
+          <th style="width:260px;">Acciones</th>
+        </tr>
+      </thead>
 
-  {% for p in products %}
-  <tr>
-    <td>{{ p.name }}</td>
-    <td>${{ p.price }}</td>
-    <td>{{ p.stock }}</td>
-  </tr>
-  {% endfor %}
-</table>
+      <tbody>
+        {% for p in products %}
+        <tr class="{% if not p.is_active %}table-secondary{% endif %}">
+          <td>
+            {{ p.name }}
+            {% if not p.is_active %}
+              <span class="badge bg-secondary ms-2">Inactivo</span>
+            {% endif %}
+          </td>
+
+          <!-- PRECIO EDITABLE -->
+          <td>
+            <form class="d-flex gap-2"
+                  method="post"
+                  action="{{ url_for('products.update_price', product_id=p.id) }}">
+              <div class="input-group input-group-sm">
+                <span class="input-group-text">$</span>
+                <input
+                  class="form-control"
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  name="price"
+                  value="{{ '%.2f'|format(p.price) }}"
+                  {% if not p.is_active %}disabled{% endif %}
+                  required
+                >
+              </div>
+
+              <button class="btn btn-outline-success btn-sm"
+                      {% if not p.is_active %}disabled{% endif %}>
+                Guardar
+              </button>
+            </form>
+
+            {% if not p.is_active %}
+              <div class="text-muted small mt-1">Actívalo para editar el precio.</div>
+            {% endif %}
+          </td>
+
+          <td>
+            {% if p.stock <= 3 %}
+              <span class="text-danger fw-bold">{{ p.stock }}</span>
+            {% else %}
+              {{ p.stock }}
+            {% endif %}
+          </td>
+
+          <td>
+            <div class="d-flex flex-wrap gap-1">
+
+              <!-- EDITAR COMPLETO -->
+              <a class="btn btn-outline-primary btn-sm"
+                 href="{{ url_for('products.edit_product', product_id=p.id) }}">
+                 Editar
+              </a>
+
+              <!-- ACTIVAR / DESACTIVAR -->
+              <form method="post"
+                    action="{{ url_for('products.toggle_product', product_id=p.id) }}">
+                <button class="btn btn-outline-warning btn-sm">
+                  {{ "Desactivar" if p.is_active else "Activar" }}
+                </button>
+              </form>
+
+              <!-- ELIMINAR -->
+              <form method="post"
+                    action="{{ url_for('products.delete_product', product_id=p.id) }}"
+                    onsubmit="return confirm('¿Eliminar producto? Si tiene ventas no se eliminará.')">
+                <button class="btn btn-outline-danger btn-sm">
+                  Eliminar
+                </button>
+              </form>
+
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+
+        {% if not products %}
+        <tr>
+          <td colspan="4" class="text-center text-muted py-4">
+            No hay productos aún.
+          </td>
+        </tr>
+        {% endif %}
+      </tbody>
+    </table>
+  </div>
+</div>
 
 {% endblock %}

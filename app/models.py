@@ -46,7 +46,7 @@ class Product(db.Model):
     name = db.Column(db.String(150), nullable=False)
     price = db.Column(db.Numeric(10, 2), nullable=False)
     stock = db.Column(db.Integer, default=0)
-
+    is_active = db.Column(db.Boolean, default=True, nullable=False)
     business = db.relationship("Business")
 
 class Sale(db.Model):

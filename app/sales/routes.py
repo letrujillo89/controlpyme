@@ -10,8 +10,9 @@ from datetime import datetime
 @login_required
 def new_sale():
     products = Product.query.filter_by(
-        business_id=current_user.business_id
-        ).order_by(Product.name.asc()).all()
+        business_id=current_user.business_id,
+        is_active=True
+    ).order_by(Product.name.asc()).all()
 
 
     return render_template("sales/new.html", products=products)
@@ -30,6 +31,10 @@ def create_sale():
 
     if quantity is None or quantity <= 0:
         flash("Cantidad inválida.", "danger")
+        return redirect(url_for("sales.new_sale"))
+    
+    if not product.is_active:
+        flash("Producto inactivo. Actívalo para vender.", "warning")
         return redirect(url_for("sales.new_sale"))
 
     product = Product.query.get_or_404(product_id)
