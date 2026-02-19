@@ -53,14 +53,11 @@ class Sale(db.Model):
     id = db.Column(db.Integer, primary_key=True)
 
     business_id = db.Column(db.Integer, db.ForeignKey("business.id"), nullable=False)
-
-    product_id = db.Column(db.Integer, db.ForeignKey("product.id"), nullable=False)
-
-    product_name = db.Column(db.String(150), nullable=False)  # snapshot
-    unit_price = db.Column(db.Numeric(10, 2), nullable=False) # snapshot
-
-    quantity = db.Column(db.Integer, nullable=False)
-    total = db.Column(db.Numeric(10, 2), nullable=False)
+    product_id = db.Column(db.Integer, db.ForeignKey("product.id"), nullable=True, index=True)
+    product_name = db.Column(db.String(150), nullable=True)
+    unit_price = db.Column(db.Numeric(10, 2), nullable=True)
+    quantity = db.Column(db.Integer, nullable=True)
+    total = db.Column(db.Numeric(10, 2), nullable=False, default=0)
 
     created_at = db.Column(db.DateTime, default=datetime.utcnow, index=True)
 
@@ -102,3 +99,27 @@ class InventoryMovement(db.Model):
     business = db.relationship("Business")
     product = db.relationship("Product")
     user = db.relationship("User")
+    
+class SaleItem(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+
+    sale_id = db.Column(
+        db.Integer,
+        db.ForeignKey("sale.id"),
+        nullable=False,
+        index=True
+    )
+
+    product_id = db.Column(
+        db.Integer,
+        db.ForeignKey("product.id"),
+        nullable=False
+    )
+
+    product_name = db.Column(db.String(150), nullable=False)
+    unit_price = db.Column(db.Numeric(10, 2), nullable=False)
+    quantity = db.Column(db.Integer, nullable=False)
+    total = db.Column(db.Numeric(10, 2), nullable=False)
+
+    sale = db.relationship("Sale", backref="items")
+    product = db.relationship("Product")
