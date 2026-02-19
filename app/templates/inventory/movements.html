@@ -1,15 +1,18 @@
 {% extends "base.html" %}
 {% block content %}
 
-<div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-2 mb-2">
+<div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-2 mb-3">
   <div>
     <h3 class="mb-0">Kardex (Inventario)</h3>
     <div class="text-muted small">Entradas, salidas y ajustes de stock</div>
   </div>
 </div>
 
+<!-- Registrar movimiento -->
 <div class="card mb-3">
   <div class="card-body">
+    <h6 class="mb-2">Registrar movimiento</h6>
+
     <form class="row g-2 align-items-end" method="post" action="{{ url_for('inventory.create_movement') }}">
       <div class="col-12 col-md-4">
         <label class="form-label mb-1">Producto</label>
@@ -48,14 +51,60 @@
   </div>
 </div>
 
-<div class="card shadow-sm">
-  <div class="card-body d-flex justify-content-between align-items-center">
-    <h5 class="mb-0">Últimos movimientos</h5>
+<!-- Filtros + export -->
+<div class="card shadow-sm mb-3">
+  <div class="card-body">
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-2">
+      <h5 class="mb-0">Últimos movimientos</h5>
+
+      <a class="btn btn-outline-success btn-sm"
+         href="{{ url_for('inventory.export_movements_csv', product_id=product_id, movement_type=movement_type, limit=limit) }}">
+         ⬇️ Exportar CSV
+      </a>
+    </div>
+
+    <form class="row g-2 align-items-end" method="get">
+      <div class="col-12 col-md-5">
+        <label class="form-label mb-1">Filtrar por producto</label>
+        <select class="form-select form-select-sm" name="product_id">
+          <option value="">Todos</option>
+          {% for p in products %}
+            <option value="{{ p.id }}" {{ "selected" if product_id == p.id else "" }}>
+              {{ p.name }}
+            </option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="col-12 col-md-3">
+        <label class="form-label mb-1">Tipo</label>
+        <select class="form-select form-select-sm" name="movement_type">
+          <option value="" {{ "selected" if not movement_type else "" }}>Todos</option>
+          <option value="in" {{ "selected" if movement_type == "in" else "" }}>Entrada</option>
+          <option value="out" {{ "selected" if movement_type == "out" else "" }}>Salida</option>
+          <option value="adjust" {{ "selected" if movement_type == "adjust" else "" }}>Ajuste</option>
+        </select>
+      </div>
+
+      <div class="col-12 col-md-2">
+        <label class="form-label mb-1">Mostrar</label>
+        <select class="form-select form-select-sm" name="limit">
+          <option value="50"  {{ "selected" if limit==50 else "" }}>50</option>
+          <option value="100" {{ "selected" if limit==100 else "" }}>100</option>
+          <option value="200" {{ "selected" if limit==200 else "" }}>200</option>
+          <option value="500" {{ "selected" if limit==500 else "" }}>500</option>
+        </select>
+      </div>
+
+      <div class="col-12 col-md-2 d-grid">
+        <button class="btn btn-dark btn-sm">Filtrar</button>
+      </div>
+    </form>
   </div>
 
   <div class="table-responsive">
-    <table class="table mb-0">
-      <thead>
+    <table class="table mb-0 align-middle">
+      <thead class="table-light">
         <tr>
           <th>Fecha</th>
           <th>Producto</th>
@@ -69,8 +118,8 @@
       <tbody>
         {% for m in movements %}
         <tr>
-          <td class="text-muted">{{ m.created_at.strftime("%Y-%m-%d %H:%M") }}</td>
-          <td>{{ m.product.name }}</td>
+          <td class="text-muted small">{{ m.created_at.strftime("%Y-%m-%d %H:%M") }}</td>
+          <td class="fw-semibold">{{ m.product.name }}</td>
           <td>
             {% if m.movement_type == "in" %}
               <span class="badge text-bg-success">Entrada</span>
@@ -86,6 +135,7 @@
           <td class="text-muted small">{{ m.note or "" }}</td>
         </tr>
         {% endfor %}
+
         {% if not movements %}
         <tr><td colspan="7" class="text-center text-muted py-3">Aún no hay movimientos</td></tr>
         {% endif %}

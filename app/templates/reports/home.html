@@ -11,7 +11,7 @@
   <!-- Botones export (wrap en móvil) -->
   <div class="d-flex flex-wrap gap-2">
     <a class="btn btn-success btn-sm"
-       href="{{ url_for('reports.export_csv') }}">
+       href="{{ url_for('reports.export_csv', days=days) }}">
       📊 Ventas (CSV)
     </a>
 

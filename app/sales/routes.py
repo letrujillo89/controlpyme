@@ -43,14 +43,20 @@ def new_sale():
             id=last_sale_id,
             business_id=current_user.business_id
         ).first()
-
+        
+    quick_products = Product.query.filter_by(
+        business_id=current_user.business_id,
+        is_active=True
+    ).order_by(Product.stock.desc()).limit(12).all()
+    
     return render_template(
         "sales/new.html",
         products=products,
         cart=cart,
         cart_total=cart_total,
         recent_sales=recent_sales,
-        last_sale=last_sale
+        last_sale=last_sale,
+        quick_products=quick_products
     )
 
 
@@ -180,6 +186,43 @@ def cart_remove(idx):
     _save_cart(cart)
     flash("Item eliminado del carrito.", "info")
     return redirect(url_for("sales.new_sale"))
+
+@sales_bp.post("/cart/add-quick/<int:product_id>")
+@login_required
+def cart_add_quick(product_id):
+    product = Product.query.get_or_404(product_id)
+
+    if product.business_id != current_user.business_id:
+        abort(403)
+
+    if not product.is_active:
+        flash("Producto inactivo. Actívalo para vender.", "warning")
+        return redirect(url_for("sales.new_sale"))
+
+    cart = _get_cart()
+
+    # cantidad en carrito para validar stock
+    in_cart_qty = sum(int(i["quantity"]) for i in cart if int(i["product_id"]) == product.id)
+
+    if int(product.stock) < (in_cart_qty + 1):
+        flash("Stock insuficiente (considerando el carrito).", "danger")
+        return redirect(url_for("sales.new_sale"))
+
+    unit_price = Decimal(str(product.price))
+    total = unit_price * Decimal(1)
+
+    cart.append({
+        "product_id": product.id,
+        "product_name": product.name,
+        "unit_price": str(unit_price),
+        "quantity": 1,
+        "total": str(total)
+    })
+
+    _save_cart(cart)
+    flash("Agregado ✅", "info")
+    return redirect(url_for("sales.new_sale"))
+
 
 @sales_bp.post("/cart/clear")
 @login_required
