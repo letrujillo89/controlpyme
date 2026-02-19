@@ -53,21 +53,56 @@
     </form>
 	
 	{% if last_sale %}
-	<div class="card mt-3 shadow-sm">
-	  <div class="card-body">
-		<div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
-		  <h6 class="mb-0">Última venta</h6>
-		  <span class="badge bg-success">Registrada ✅</span>
+		<div class="card mt-3 shadow-sm border-success">
+		  <div class="card-body">
+			<div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+			  <h6 class="mb-0">Última venta</h6>
+			  <span class="badge bg-success">Registrada ✅</span>
+			</div>
+
+			<div class="mt-2 small text-muted">
+			  Producto: <strong>{{ last_sale.product_name }}</strong><br>
+			  Cantidad: <strong>{{ last_sale.quantity }}</strong><br>
+			  Precio: <strong>${{ "%.2f"|format(last_sale.unit_price) }}</strong><br>
+			  Total: <strong class="text-success">${{ "%.2f"|format(last_sale.total) }}</strong>
+			</div>
+		  </div>
 		</div>
-		<div class="mt-2 small text-muted">
-		  Producto: <strong>{{ last_sale.product_name }}</strong><br>
-		  Cantidad: <strong>{{ last_sale.quantity }}</strong><br>
-		  Precio: <strong>${{ "%.2f"|format(last_sale.unit_price) }}</strong><br>
-		  Total: <strong class="text-success">${{ "%.2f"|format(last_sale.total) }}</strong>
-		</div>
-	  </div>
-	</div>
-	{% endif %}
+		{% endif %}
+
+		<hr class="my-4">
+
+		<h5 class="mb-2">Historial reciente</h5>
+		<div class="card shadow-sm">
+		  <div class="table-responsive">
+			<table class="table mb-0 align-middle">
+			  <thead class="table-light">
+				<tr>
+				  <th>Fecha</th>
+				  <th>Producto</th>
+				  <th class="text-end">Cant.</th>
+				  <th class="text-end">Total</th>
+				</tr>
+			  </thead>
+			  <tbody>
+				{% for s in recent_sales %}
+				<tr class="{% if last_sale and s.id == last_sale.id %}table-success{% endif %}">
+				  <td class="text-muted small">{{ s.created_at }}</td>
+				  <td>{{ s.product_name }}</td>
+				  <td class="text-end">{{ s.quantity }}</td>
+				  <td class="text-end text-success">${{ "%.2f"|format(s.total) }}</td>
+				</tr>
+				{% endfor %}
+				{% if not recent_sales %}
+				<tr>
+				  <td colspan="4" class="text-center text-muted py-3">Aún no hay ventas</td>
+				</tr>
+    {% endif %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
 
   </div>
 </div>

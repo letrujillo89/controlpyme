@@ -8,21 +8,31 @@ from ..models import Product, Sale, InventoryMovement
 @sales_bp.get("/new")
 @login_required
 def new_sale():
-    # Solo productos activos para vender
     products = Product.query.filter_by(
         business_id=current_user.business_id,
         is_active=True
     ).order_by(Product.name.asc()).all()
+
+    # Últimas ventas (para mostrar abajo)
+    recent_sales = Sale.query.filter_by(
+        business_id=current_user.business_id
+    ).order_by(Sale.created_at.desc()).limit(10).all()
+
+    # Última venta (para resaltar)
     last_sale = None
     last_sale_id = session.get("last_sale_id")
-
     if last_sale_id:
         last_sale = Sale.query.filter_by(
             id=last_sale_id,
             business_id=current_user.business_id
         ).first()
 
-    return render_template("sales/new.html", products=products, last_sale=last_sale)
+    return render_template(
+        "sales/new.html",
+        products=products,
+        recent_sales=recent_sales,
+        last_sale=last_sale
+    )
 
 
 @sales_bp.post("/new")
