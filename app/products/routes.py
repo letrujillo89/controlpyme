@@ -2,7 +2,10 @@ from flask import render_template, request, redirect, url_for, flash, abort
 from flask_login import login_required, current_user
 from . import products_bp
 from ..extensions import db
-from ..models import Product, Sale
+from sqlalchemy import func
+from datetime import datetime
+from ..models import Product, Sale, InventoryMovement
+
 
 @products_bp.get("/")
 @login_required
@@ -24,24 +27,98 @@ def new_product():
 @products_bp.post("/new")
 @login_required
 def create_product():
-
     name = (request.form.get("name") or "").strip()
     price = request.form.get("price", type=float)
     stock = request.form.get("stock", type=int) or 0
+
+    # switches del form
+    merge_if_exists = request.form.get("merge_if_exists") == "1"
+    update_price_if_merge = request.form.get("update_price_if_merge") == "1"
+    is_active = request.form.get("is_active", "1") == "1"
 
     if not name or price is None:
         flash("Nombre y precio son obligatorios.", "danger")
         return redirect(url_for("products.new_product"))
 
+    if price < 0:
+        flash("El precio no puede ser negativo.", "danger")
+        return redirect(url_for("products.new_product"))
+
+    if stock < 0:
+        flash("El stock no puede ser negativo.", "danger")
+        return redirect(url_for("products.new_product"))
+
+    # Buscar producto existente (mismo negocio, nombre case-insensitive)
+    existing = Product.query.filter(
+        Product.business_id == current_user.business_id,
+        func.lower(Product.name) == name.lower()
+    ).first()
+
+    # ===== Caso 1: Existe y queremos MERGE =====
+    if existing and merge_if_exists:
+        before = int(existing.stock or 0)
+        after = before + int(stock)
+
+        # si el usuario puso stock 0 y solo quiere evitar duplicado:
+        # igual permitimos actualizar precio/estado si lo marcó
+        if update_price_if_merge:
+            existing.price = price
+
+        existing.is_active = is_active
+
+        # si hay stock para sumar, registramos movimiento IN
+        if stock > 0:
+            mv = InventoryMovement(
+                business_id=current_user.business_id,
+                product_id=existing.id,
+                user_id=current_user.id,
+                movement_type="in",
+                quantity=int(stock),
+                stock_before=before,
+                stock_after=after,
+                note="Entrada por alta/merge de producto",
+                created_at=datetime.utcnow()
+            )
+            db.session.add(mv)
+            existing.stock = after
+
+        db.session.commit()
+
+        flash("Producto existente actualizado ✅ (se evitó duplicado)", "success")
+        return redirect(url_for("products.edit_product", product_id=existing.id))
+
+    # ===== Caso 2: Existe pero NO queremos merge =====
+    if existing and not merge_if_exists:
+        flash("Ese producto ya existe. Activa 'sumar stock al existente' o edítalo.", "warning")
+        return redirect(url_for("products.edit_product", product_id=existing.id))
+
+    # ===== Caso 3: No existe => Crear nuevo =====
     product = Product(
         name=name,
         price=price,
-        stock=stock,
-        business_id=current_user.business_id
+        stock=int(stock),
+        business_id=current_user.business_id,
+        is_active=is_active
     )
 
-
     db.session.add(product)
+    db.session.flush()  # ya tenemos product.id
+
+    # Kardex automático si nace con stock
+    if stock > 0:
+        mv = InventoryMovement(
+            business_id=current_user.business_id,
+            product_id=product.id,
+            user_id=current_user.id,
+            movement_type="in",
+            quantity=int(stock),
+            stock_before=0,
+            stock_after=int(stock),
+            note="Stock inicial (alta de producto)",
+            created_at=datetime.utcnow()
+        )
+        db.session.add(mv)
+
     db.session.commit()
 
     flash("Producto creado ✅", "success")
